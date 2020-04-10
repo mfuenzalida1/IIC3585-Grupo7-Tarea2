@@ -1,0 +1,4 @@
+/node_modules
+/dist/bundle.js
+steps.txt
+package-lock.json
