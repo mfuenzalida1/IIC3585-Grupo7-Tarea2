@@ -91,7 +91,7 @@ const PlayerMovementP1x$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(50).subscribe(val => {
+    Observable.interval(10).subscribe(val => {
         if (canMove) {
             movement = movementP1x(movement, keyPressed);
             subscriber.next(movement);
@@ -153,7 +153,7 @@ const PlayerMovementP2x$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(50).subscribe(val => {
+    Observable.interval(10).subscribe(val => {
         if (canMove) {
             movement = movementP2x(movement, keyPressed);
             subscriber.next(movement);
@@ -216,7 +216,7 @@ const PlayerMovementP1y$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(50).subscribe(val => {
+    Observable.interval(10).subscribe(val => {
         if (canMove) {
             movement = movementP1y(movement, keyPressed);
             subscriber.next(movement);
@@ -278,7 +278,7 @@ const PlayerMovementP2y$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(50).subscribe(val => {
+    Observable.interval(10).subscribe(val => {
         if (canMove) {
             movement = movementP2y(movement, keyPressed);
             subscriber.next(movement);
@@ -315,7 +315,7 @@ const LifeP2$ = Observable.combineLatest(
 const Game$ = Observable.combineLatest(
     CurrentScoreP1$, CurrentScoreP2$, PlayerMovementP1x$, PlayerMovementP1y$, PlayerMovementP2x$, PlayerMovementP2y$, Obstacles$,
     (scoreP1, scoreP2, p1x, p1y, p2x, p2y, obstacles) => ({ scoreP1, scoreP2, p1x, p1y, p2x, p2y, obstacles })
-).sample(Observable.interval(50)).takeWhile(isAliveP1 && isAliveP2);
+).sample(Observable.interval(10)).takeWhile(isAliveP1 && isAliveP2);
 
 // Input click para el boton replay
 Observable.fromEvent(button, 'click').subscribe(replay);
