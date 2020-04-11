@@ -1,6 +1,6 @@
 import { Observable, BehaviorSubject } from 'rxjs/Rx';
 import { canvas, button } from './utils';
-import { showP1Score, showP2Score, clearCanvas, showP1, showP2, showObstacles, createObstacle, detectCollision, showButton, hideButton } from './utils';
+import { showP1Score, showP2Score, clearCanvas, showP1, showP2, showObstacles, createObstacle, detectCollision, showButton, hideButton, getAngleChange } from './utils';
 import { directionP1x, movementP1x, directionP1y, movementP1y, directionP2x, movementP2x, directionP2y, movementP2y, sumLatest, isDead } from './pure';
 import { SCORE_INTERVAL_RAISE, SCORE_INTERVAL_POINTS, OBSTACLE_FREQUENCY, OBSTACLE_DROP_SPEED } from './constants';
 import { fromEvent } from 'rxjs/observable/fromEvent';
@@ -45,11 +45,13 @@ const keydownSource = fromEvent(document, 'keydown')
 const keyupSource = fromEvent(document, 'keyup')
 
 const PlayerMovementP1x$ = new Observable(subscriber => {
-    let movement = PLAYER1_STARTING_POSITION
+    let movement = PLAYER1_STARTING_POSITION;
     let canMove = false;
     let keyPressed;
     let isPressingLeft = false;
     let isPressingRight = false;
+    let speed = 0;
+    let stop = false;
     keydownSource.pluck('key')
         .filter(directionP1x)
         .subscribe(key => {
@@ -96,14 +98,31 @@ const PlayerMovementP1x$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(10).subscribe(val => {
-        if (canMove) {
-            movement = movementP1x(movement, keyPressed);
+    Observable.interval(1).subscribe(val => {
+        if (canMove || stop) {
+            movement = movementP1x(movement, keyPressed, speed);
             subscriber.next(movement);
         } else {
             subscriber.next(movement);
         }
     });
+
+    Observable.interval(50).subscribe(val => {
+        if (speed < 10 && canMove) {
+            speed++
+        }
+    });
+
+    Observable.interval(30).subscribe(val => {
+        if (speed > 0 && !canMove) {
+            speed--
+            stop = true;
+        } else {
+            stop = false;
+        }
+    });
+
+
 });
 
 const PlayerMovementP2x$ = new Observable(subscriber => {
@@ -112,6 +131,8 @@ const PlayerMovementP2x$ = new Observable(subscriber => {
     let keyPressed;
     let isPressingLeft = false;
     let isPressingRight = false;
+    let speed = 0;
+    let stop = false;
     keydownSource.pluck('key')
         .filter(directionP2x)
         .subscribe(key => {
@@ -158,12 +179,27 @@ const PlayerMovementP2x$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(10).subscribe(val => {
-        if (canMove) {
-            movement = movementP2x(movement, keyPressed);
+    Observable.interval(1).subscribe(val => {
+        if (canMove || stop) {
+            movement = movementP2x(movement, keyPressed, speed);
             subscriber.next(movement);
         } else {
             subscriber.next(movement);
+        }
+    });
+
+    Observable.interval(50).subscribe(val => {
+        if (speed < 10 && canMove) {
+            speed++
+        }
+    });
+
+    Observable.interval(30).subscribe(val => {
+        if (speed > 0 && !canMove) {
+            speed--
+            stop = true;
+        } else {
+            stop = false;
         }
     });
 });
@@ -175,6 +211,8 @@ const PlayerMovementP1y$ = new Observable(subscriber => {
     let keyPressed;
     let isPressingUp = false;
     let isPressingDown = false;
+    let speed = 0;
+    let stop = false;
     keydownSource.pluck('key')
         .filter(directionP1y)
         .subscribe(key => {
@@ -221,12 +259,27 @@ const PlayerMovementP1y$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(10).subscribe(val => {
-        if (canMove) {
-            movement = movementP1y(movement, keyPressed);
+    Observable.interval(1).subscribe(val => {
+        if (canMove || stop) {
+            movement = movementP1y(movement, keyPressed, speed);
             subscriber.next(movement);
         } else {
             subscriber.next(movement);
+        }
+    });
+
+    Observable.interval(50).subscribe(val => {
+        if (speed < 10 && canMove) {
+            speed++
+        }
+    });
+
+    Observable.interval(30).subscribe(val => {
+        if (speed > 0 && !canMove) {
+            speed--
+            stop = true;
+        } else {
+            stop = false;
         }
     });
 });
@@ -237,6 +290,8 @@ const PlayerMovementP2y$ = new Observable(subscriber => {
     let keyPressed;
     let isPressingUp = false;
     let isPressingDown = false;
+    let speed = 0;
+    let stop = false;
     keydownSource.pluck('key')
         .filter(directionP2y)
         .subscribe(key => {
@@ -283,13 +338,110 @@ const PlayerMovementP2y$ = new Observable(subscriber => {
             }
         });
 
-    Observable.interval(10).subscribe(val => {
-        if (canMove) {
-            movement = movementP2y(movement, keyPressed);
+    Observable.interval(1).subscribe(val => {
+        if (canMove || stop) {
+            movement = movementP2y(movement, keyPressed, speed);
             subscriber.next(movement);
         } else {
             subscriber.next(movement);
         }
+    });
+
+    Observable.interval(50).subscribe(val => {
+        if (speed < 10 && canMove) {
+            speed++
+        }
+    });
+
+    Observable.interval(30).subscribe(val => {
+        if (speed > 0 && !canMove) {
+            speed--
+            stop = true;
+        } else {
+            stop = false;
+        }
+    });
+});
+
+const PlayerAngleP1$ = new Observable(subscriber => {
+    let angle = 360 * 20;
+    let upMove = false;
+    let downMove = false;
+    let leftMove = false;
+    let rightMove = false;
+    keydownSource.pluck('key')
+        .subscribe(key => {
+            if (key == 's') {
+                downMove = true;
+            } else if (key == 'w') {
+                upMove = true;
+            } else if (key == 'a') {
+                leftMove = true;
+            } else if (key == 'd') {
+                rightMove = true;
+            }
+        });
+
+    keyupSource.pluck('key')
+        .subscribe(key => {
+            if (key == 's') {
+                downMove = false;
+            } else if (key == 'w') {
+                upMove = false;
+            } else if (key == 'a') {
+                leftMove = false;
+            } else if (key == 'd') {
+                rightMove = false;
+            }
+        });
+
+    Observable.interval(1).subscribe(val => {
+        subscriber.next(angle);
+    });
+
+    Observable.interval(3).subscribe(val => {
+        angle += getAngleChange(angle, upMove, downMove, leftMove, rightMove);
+    });
+});
+
+const PlayerAngleP2$ = new Observable(subscriber => {
+    let angle = 360 * 20;
+    let upMove = false;
+    let downMove = false;
+    let leftMove = false;
+    let rightMove = false;
+    keydownSource.pluck('key')
+        .subscribe(key => {
+            if (key == 'ArrowDown') {
+                downMove = true;
+            } else if (key == 'ArrowUp') {
+                upMove = true;
+            } else if (key == 'ArrowLeft') {
+                leftMove = true;
+            } else if (key == 'ArrowRight') {
+                rightMove = true;
+            }
+        });
+
+    keyupSource.pluck('key')
+        .subscribe(key => {
+            if (key == 'ArrowDown') {
+                downMove = false;
+            } else if (key == 'ArrowUp') {
+                upMove = false;
+            } else if (key == 'ArrowLeft') {
+                leftMove = false;
+            } else if (key == 'ArrowRight') {
+                rightMove = false;
+            }
+        });
+
+    Observable.interval(1).subscribe(val => {
+        subscriber.next(angle);
+    });
+
+    Observable.interval(3).subscribe(val => {
+        angle += getAngleChange(angle, upMove, downMove, leftMove, rightMove);
     });
 });
 
@@ -318,9 +470,9 @@ const LifeP2$ = Observable.combineLatest(
     .takeWhile(isAliveP2);
 
 const Game$ = Observable.combineLatest(
-    CurrentScoreP1$, CurrentScoreP2$, PlayerMovementP1x$, PlayerMovementP1y$, PlayerMovementP2x$, PlayerMovementP2y$, Obstacles$,
-    (scoreP1, scoreP2, p1x, p1y, p2x, p2y, obstacles) => ({ scoreP1, scoreP2, p1x, p1y, p2x, p2y, obstacles })
-).sample(Observable.interval(10)).takeWhile(isAliveP1 && isAliveP2);
+    CurrentScoreP1$, CurrentScoreP2$, PlayerMovementP1x$, PlayerMovementP1y$, PlayerAngleP1$, PlayerMovementP2x$, PlayerMovementP2y$, PlayerAngleP2$, Obstacles$,
+    (scoreP1, scoreP2, p1x, p1y, ap1, p2x, p2y, ap2, obstacles) => ({ scoreP1, scoreP2, p1x, p1y, ap1, p2x, p2y, ap2, obstacles })
+).sample(Observable.interval(1)).takeWhile(isAliveP1 && isAliveP2);
 
 // Input click para el boton replay
 Observable.fromEvent(button, 'click').subscribe(replay);
@@ -329,12 +481,12 @@ Observable.fromEvent(button, 'click').subscribe(replay);
 startGame();
 
 // Funcion que va creando y manejando los elementos:
-function renderGame({ scoreP1, scoreP2, p1x, p1y, p2x, p2y, obstacles }) {
+function renderGame({ scoreP1, scoreP2, p1x, p1y, ap1, p2x, p2y, ap2, obstacles }) {
     clearCanvas();
     showP1Score(scoreP1);
     showP2Score(scoreP2);
-    showP1({ x: p1x, y: p1y });
-    showP2({ x: p2x, y: p2y });
+    showP1({ x: p1x, y: p1y, angle: ap1 });
+    showP2({ x: p2x, y: p2y, angle: ap2 });
     showObstacles(obstacles);
 }
 

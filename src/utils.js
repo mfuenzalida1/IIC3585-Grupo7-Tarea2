@@ -46,24 +46,27 @@ function clearCanvas() {
 }
 
 // Dibuja al jugador 1
-function showP1({ x, y }) {
+function showP1({ x, y, angle }) {
+    const image = new Image();
+    image.src = "../images/player1.jpg"
     context.beginPath();
-    context.rect(x, y, 60, -120);
-    // Color de llenado
-    context.fillStyle = "red";
-    context.fill();
-    context.stroke();
+    context.translate(x, y);
+    context.rotate(angle * (Math.PI / 180));
+    context.drawImage(image, -40 / 2, 70 / 2, 40, -70);
+    context.rotate(-angle * (Math.PI / 180));
+    context.translate(-x, -y);
 }
 
 // Dibuja al jugador 2
-function showP2({ x, y }) {
+function showP2({ x, y, angle }) {
+    const image = new Image();
+    image.src = "../images/player2.png"
     context.beginPath();
-    context.rect(x, y, 60, -120);
-    // Color de llenado
-    context.fillStyle = "blue";
-    context.fill();
-    context.stroke();
-
+    context.translate(x, y);
+    context.rotate(angle * (Math.PI / 180));
+    context.drawImage(image, -40 / 2, 70 / 2, 40, -70);
+    context.rotate(-angle * (Math.PI / 180));
+    context.translate(-x, -y);
 }
 
 // Dibuja los obstaculos en el mapa
@@ -119,6 +122,75 @@ function fetchRandomValue(range) {
     return parseInt(Math.random() * range);
 }
 
+function getAngleChange(angle, upMove, downMove, leftMove, rightMove) {
+    if (upMove && leftMove && (angle % 360 != 315)) {
+        if ((angle % 360 <= 45) || (angle % 360 >= 315)) {
+            return -5;
+        } else if ((angle % 360 <= 315) && (angle % 360 >= 225)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (upMove && rightMove && (angle % 360 != 45)) {
+        if ((angle % 360 <= 135) && (angle % 360 >= 45)) {
+            return -5;
+        } else if ((angle % 360 <= 45) || (angle % 360 >= 315)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (downMove && leftMove && (angle % 360 != 225)) {
+        if ((angle % 360 <= 315) && (angle % 360 >= 225)) {
+            return -5;
+        } else if ((angle % 360 <= 225) && (angle % 360 >= 135)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (downMove && rightMove && (angle % 360 != 135)) {
+        if ((angle % 360 <= 225) && (angle % 360 >= 135)) {
+            return -5;
+        } else if ((angle % 360 <= 135) && (angle % 360 >= 45)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (upMove && !rightMove && !leftMove && (angle % 360 != 0)) {
+        if ((angle % 360 <= 90) && (angle % 360 >= 0)) {
+            return -5;
+        } else if (((angle % 360 < 360) && (angle % 360 >= 270)) || (angle % 360 == 0)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (downMove && !rightMove && !leftMove && (angle % 360 != 180)) {
+        if ((angle % 360 <= 270) && (angle % 360 >= 180)) {
+            return -5;
+        } else if ((angle % 360 <= 180) && (angle % 360 >= 90)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (leftMove && !upMove && !downMove && (angle % 360 != 270)) {
+        if (((angle % 360 < 360) && (angle % 360 >= 270)) || (angle % 360 == 0)) {
+            return -5;
+        } else if ((angle % 360 <= 270) && (angle % 360 >= 180)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    } else if (rightMove && !upMove && !downMove && (angle % 360 != 90)) {
+        if ((angle % 360 <= 180) && (angle % 360 >= 90)) {
+            return -5;
+        } else if ((angle % 360 <= 90) && (angle % 360 >= 0)) {
+            return 5;
+        } else {
+            return 180;
+        }
+    }
+    return 0
+}
+
 module.exports = {
     canvas,
     button,
@@ -131,5 +203,6 @@ module.exports = {
     createObstacle,
     detectCollision,
     showButton,
-    hideButton
+    hideButton,
+    getAngleChange
 }
