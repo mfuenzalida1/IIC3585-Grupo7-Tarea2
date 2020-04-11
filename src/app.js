@@ -25,16 +25,21 @@ const CurrentScoreP2$ = ScoreBehaviorP2$.scan(sumLatest);
 const ScoreIntervalP1$ = Observable.interval(SCORE_INTERVAL_RAISE).map(() => SCORE_INTERVAL_POINTS);
 const ScoreIntervalP2$ = Observable.interval(SCORE_INTERVAL_RAISE).map(() => SCORE_INTERVAL_POINTS);
 
-const obstacleCreator$ = Observable.interval(OBSTACLE_FREQUENCY).map(_ => createObstacle());
+const obstacleCreator$ = Observable.interval(OBSTACLE_FREQUENCY).map(x => { 
+    if (x % 20 === 0) {
+        return createObstacle();
+    }
+    return null;
+});
 
 const Obstacles$ = obstacleCreator$
-    .scan((obstacles, obstacle) => [...obstacles, obstacle].filter(obstacle => !(obstacle.y > canvas.height)), [])
+    .scan((obstacles, obstacle) => [...obstacles, obstacle].filter(obstacle => obstacle && !(obstacle.y > canvas.height)), [])
     .map(obstacles => {
         obstacles.forEach(obstacle => {
             obstacle.y += OBSTACLE_DROP_SPEED;
         });
         return obstacles;
-    }).share();
+    });
 
 const keydownSource = fromEvent(document, 'keydown')
 const keyupSource = fromEvent(document, 'keyup')
