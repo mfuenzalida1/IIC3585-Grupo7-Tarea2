@@ -40,6 +40,13 @@ function showP2Score(score) {
     context.fillText(`P2 SCORE: ${score}`, canvas.width - 300, 43);
 }
 
+// Dibuja el texto final de ganador
+function showWinner(winner) {
+    context.fillStyle = TEXT_COLOR;
+    context.font = TEXT_FONT;
+    context.fillText(`GANADOR: ${winner}`, canvas.width / 2, 43);
+}
+
 // Saca todos los elementos del mapa
 function clearCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -48,7 +55,7 @@ function clearCanvas() {
 // Dibuja al jugador 1
 function showP1({ x, y, angle }) {
     const image = new Image();
-    image.src = "../images/player1.jpg"
+    image.src = "../images/player1.jpg";
     context.beginPath();
     context.translate(x, y);
     context.rotate(angle * (Math.PI / 180));
@@ -60,7 +67,7 @@ function showP1({ x, y, angle }) {
 // Dibuja al jugador 2
 function showP2({ x, y, angle }) {
     const image = new Image();
-    image.src = "../images/player2.png"
+    image.src = "../images/player2.png";
     context.beginPath();
     context.translate(x, y);
     context.rotate(angle * (Math.PI / 180));
@@ -90,7 +97,7 @@ function createObstacle() {
     return {
         x: fetchRandomValue(canvas.width),
         y: 0,
-        radius: parseInt((Math.random() * 10) + 5)
+        radius: 20
     };
 }
 
@@ -105,16 +112,27 @@ function showButton() {
 }
 
 // Offset de colisiones
-const offset = 50;
+const x_offset = 20;
+const y_offset = 35;
 
 // Detecta colisiones entre un obstaculo y un jugador
-function detectCollision(obstacles, player) {
-    return obstacles.some(obstacle => isCollision(obstacle, player))
+function detectCollision(obstacles, x, y) {
+    return obstacles.some(obstacle => isCollision(obstacle, x, y));
 }
 
 // Revisa los rangos de colisiones
-function isCollision(obstacle, player) {
-    return (obstacle.x > player.x - offset && obstacle.x < player.x + offset) && (obstacle.y > player.y - offset && obstacle.y < player.y + offset)
+function isCollision(obstacle, x, y) {
+    // Collision box de jugador
+    // context.rect(player.x - x_offset, player.y - y_offset, x_offset * 2, y_offset * 2);
+    // Collision box de obstaculos
+    // context.arc(obstacle.x, obstacle.y, obstacle.radius, 0, 360 * (Math.PI / 180));
+    // context.stroke();
+    if ((obstacle.x > x - x_offset && obstacle.x < x + x_offset) && (obstacle.y < y + y_offset && obstacle.y > y - y_offset)) {
+        context.rect(x - x_offset, y - y_offset, x_offset * 2, y_offset * 2);
+        context.arc(obstacle.x, obstacle.y, obstacle.radius, 0, 360 * (Math.PI / 180));
+        context.stroke();
+        return true;
+    }
 }
 
 // Retorna un numero al azar en un rango
@@ -122,6 +140,7 @@ function fetchRandomValue(range) {
     return parseInt(Math.random() * range);
 }
 
+// Cambios de angulo en movimiento
 function getAngleChange(angle, upMove, downMove, leftMove, rightMove) {
     if (upMove && leftMove && (angle % 360 != 315)) {
         if ((angle % 360 <= 45) || (angle % 360 >= 315)) {
@@ -188,7 +207,7 @@ function getAngleChange(angle, upMove, downMove, leftMove, rightMove) {
             return 180;
         }
     }
-    return 0
+    return 0;
 }
 
 module.exports = {
@@ -199,10 +218,11 @@ module.exports = {
     clearCanvas,
     showP1,
     showP2,
+    showWinner,
     showObstacles,
     createObstacle,
     detectCollision,
     showButton,
     hideButton,
     getAngleChange
-}
+};
